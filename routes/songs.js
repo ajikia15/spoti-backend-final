@@ -14,4 +14,7 @@ router.post("/add", (req, res) => {
   return SongService.addSong(req, res);
 });
 
+router.delete("/:id", (req, res) => {
+  return SongService.deleteSong(req, res);
+});
 module.exports = router;

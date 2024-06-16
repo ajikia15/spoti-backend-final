@@ -11,7 +11,10 @@ router.get("/:id", (req, res) => {
 });
 
 router.post("/add", (req, res) => {
-  return ArtistService.addStudent(req, res);
+  return ArtistService.addArtist(req, res);
+});
+router.delete("/:id", (req, res) => {
+  return ArtistService.deleteArtist(req, res);
 });
 
 module.exports = router;

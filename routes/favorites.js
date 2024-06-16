@@ -13,5 +13,7 @@ router.get("/:id", (req, res) => {
 router.post("/add", (req, res) => {
   return FavoriteService.addFavorite(req, res);
 });
-
+router.delete("/:id", (req, res) => {
+  return FavoriteService.deleteFavorite(req, res);
+});
 module.exports = router;

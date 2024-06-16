@@ -4,10 +4,8 @@ const artistSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     dob: { type: String, required: true },
-    artistId: { type: String, required: true, unique: true },
     albums: [
       {
-        albumId: { type: String },
         name: { type: String },
       },
     ],
@@ -24,5 +22,5 @@ const artistSchema = new mongoose.Schema(
   }
 );
 
-const Model = mongoose.model("Artist", artistSchema);
+const Model = mongoose.model("artist", artistSchema);
 module.exports = Model;
