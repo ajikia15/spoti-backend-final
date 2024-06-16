@@ -13,8 +13,18 @@ module.exports = {
   },
   addSong: async (req, res) => {
     try {
-      const savedItem = await new SongModel(req.body).save();
-      res.json(savedItem);
+      const savedSong = await new SongModel(req.body).save();
+      await AlbumModel.updateOne(
+        { _id: savedSong.albumId },
+        {
+          $push: {
+            songs: {
+              name: savedSong.name,
+            },
+          },
+        }
+      );
+      res.json(savedSong);
     } catch (error) {
       res.status(400).json(error);
     }
