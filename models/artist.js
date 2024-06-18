@@ -7,7 +7,7 @@ const artistSchema = new mongoose.Schema(
     albums: [
       {
         name: { type: String },
-        albumId: { type: mongoose.Schema.Types.ObjectId },
+        _id: { type: mongoose.Schema.Types.ObjectId },
       },
     ],
     bio: { type: String },

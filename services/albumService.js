@@ -25,7 +25,7 @@ module.exports = {
           $push: {
             albums: {
               name: savedAlbum.name,
-              albumId: savedAlbum._id,
+              _id: savedAlbum._id,
             },
           },
         }
@@ -53,7 +53,7 @@ module.exports = {
 
       await ArtistModel.updateOne(
         { _id: album.artistId },
-        { $pull: { albums: { albumId: album._id } } }
+        { $pull: { albums: { _id: album._id } } }
       );
 
       await AlbumModel.findByIdAndDelete(req.params.id);
