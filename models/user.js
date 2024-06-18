@@ -1,16 +1,14 @@
 const mongoose = require("mongoose");
 
-const artistSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    dob: { type: String, required: true },
-    albums: [
+    favorites: [
       {
         name: { type: String },
-        albumId: { type: mongoose.Schema.Types.ObjectId },
       },
     ],
-    bio: { type: String },
+    password: { type: String, required: true },
   },
   {
     timestamps: true,
@@ -23,5 +21,5 @@ const artistSchema = new mongoose.Schema(
   }
 );
 
-const Model = mongoose.model("artist", artistSchema);
+const Model = mongoose.model("user", userSchema);
 module.exports = Model;

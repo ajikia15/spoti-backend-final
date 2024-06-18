@@ -1,4 +1,5 @@
 const favoriteModel = require("../models/favorite");
+const UserModel = require("../models/user");
 module.exports = {
   findAll: (req, res) => {
     // maybe based on the user?
@@ -13,8 +14,18 @@ module.exports = {
   },
   addFavorite: async (req, res) => {
     try {
-      const savedItem = await new favoriteModel(req.body).save();
-      res.json(savedItem);
+      const savedFavorite = await new favoriteModel(req.body).save();
+      await UserModel.updateOne(
+        { _id: savedFavorite.userId },
+        {
+          $push: {
+            favorites: {
+              name: savedFavorite.name,
+            },
+          },
+        }
+      );
+      res.json(savedFavorite);
     } catch (error) {
       res.status(400).json(error);
     }
