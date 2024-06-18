@@ -12,6 +12,7 @@ const albumSchema = new mongoose.Schema(
       {
         name: { type: String, required: true },
         _id: { type: mongoose.Schema.Types.ObjectId },
+        trackNumber: { type: Number, default: 1 },
       },
     ],
     releaseDate: { type: Date, required: true },

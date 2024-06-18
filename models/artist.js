@@ -6,7 +6,7 @@ const artistSchema = new mongoose.Schema(
     dob: { type: String, required: true },
     albums: [
       {
-        name: { type: String },
+        name: { type: String, required: true },
         _id: { type: mongoose.Schema.Types.ObjectId },
       },
     ],

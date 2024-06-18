@@ -13,11 +13,23 @@ module.exports = {
   },
   addSong: async (req, res) => {
     try {
-      const albumExists = await AlbumModel.exists({ _id: req.body.albumId });
-      if (!albumExists) {
+      const album = await AlbumModel.findById(req.body.albumId);
+      if (!album) {
         return res.status(404).json({ message: "Album not found" });
       }
 
+      // let nextTrackNumber = 1;
+      // if (album.songs && album.songs.length > 0) {
+      //   const maxTrackNumber = album.songs.reduce(
+      //     (max, song) => Math.max(max, song.trackNumber),
+      //     0
+      //   );
+      //   nextTrackNumber = maxTrackNumber + 1;
+      // }
+
+      // if (!req.body.trackNumber) {
+      //   req.body.trackNumber = nextTrackNumber;
+      // }
       const savedSong = await new SongModel(req.body).save();
       await AlbumModel.updateOne(
         { _id: savedSong.albumId },
@@ -26,6 +38,7 @@ module.exports = {
             songs: {
               name: savedSong.name,
               _id: savedSong._id,
+              trackNumber: savedSong.trackNumber,
             },
           },
         }
