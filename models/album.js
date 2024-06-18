@@ -10,8 +10,8 @@ const albumSchema = new mongoose.Schema(
     },
     songs: [
       {
-        songId: { type: String, required: true, unique: true },
         name: { type: String, required: true },
+        _id: { type: mongoose.Schema.Types.ObjectId },
       },
     ],
     releaseDate: { type: Date, required: true },

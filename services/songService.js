@@ -13,6 +13,11 @@ module.exports = {
   },
   addSong: async (req, res) => {
     try {
+      const albumExists = await AlbumModel.exists({ _id: req.body.albumId });
+      if (!albumExists) {
+        return res.status(404).json({ message: "Album not found" });
+      }
+
       const savedSong = await new SongModel(req.body).save();
       await AlbumModel.updateOne(
         { _id: savedSong.albumId },
@@ -20,6 +25,7 @@ module.exports = {
           $push: {
             songs: {
               name: savedSong.name,
+              _id: savedSong._id,
             },
           },
         }
@@ -45,9 +51,10 @@ module.exports = {
       }
 
       await AlbumModel.updateMany(
-        {},
-        { $pull: { songs: { songId: song.songId } } }
+        { _id: song.albumId },
+        { $pull: { songs: { _id: song._id } } }
       );
+      await SongModel.findByIdAndDelete(req.params.id);
 
       res.json({ message: "Song has been deleted and removed from its album" });
     } catch (error) {

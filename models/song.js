@@ -3,13 +3,13 @@ const mongoose = require("mongoose");
 const songSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    songId: { type: String, required: true, unique: true },
     albumId: { type: String, required: true },
     artistId: { type: String, required: true },
     duration: { type: String },
     genre: { type: String },
-    trackNumber: { type: Number },
+    trackNumber: { type: Number, default: 0 },
     favoritedAmount: { type: Number, default: 0 },
+    listenAmount: { type: Number, default: 0 },
   },
   {
     timestamps: true,
