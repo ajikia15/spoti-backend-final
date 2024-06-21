@@ -2,24 +2,21 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    favorites: [
-      {
-        name: { type: String },
-      },
-    ],
+    username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    role: { type: String, required: true, default: "user" },
   },
   {
+    collection: "users",
     timestamps: true,
-    read: "nearest",
     writeConcern: {
       w: "majority",
-      wtimeoutMS: 30000,
       j: true,
+      wtimeoutMS: 30000,
     },
+    read: "nearest",
   }
 );
 
-const Model = mongoose.model("user", userSchema);
+const Model = mongoose.model("User", userSchema);
 module.exports = Model;
