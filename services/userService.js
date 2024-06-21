@@ -44,7 +44,13 @@ module.exports = {
         process.env.SECRET_KEY
       );
 
-      res.json({ token });
+      res.cookie("auth_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 24 * 60 * 60 * 1000,
+      });
+
+      res.json({ message: "User registered successfully" });
     } catch (err) {
       console.log(err);
       res.status(500).send(err);
@@ -70,7 +76,13 @@ module.exports = {
           process.env.SECRET_KEY
         );
 
-        res.json({ token });
+        res.cookie("auth_token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 24 * 60 * 60 * 1000,
+        });
+
+        res.json({ message: "User logged in successfully" });
       } else {
         return res.status(404).json({
           message: "user_not_found",
