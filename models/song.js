@@ -8,11 +8,11 @@ const songSchema = new mongoose.Schema(
       required: true,
       ref: "album",
     },
-    artistId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: "artist",
-    },
+    // artistId: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   required: true,
+    //   ref: "artist",
+    // },
     duration: { type: String },
     genre: { type: String },
     trackNumber: { type: Number, default: 1 },

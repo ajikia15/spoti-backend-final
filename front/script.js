@@ -1,12 +1,74 @@
 $(document).ready(function () {
+  // Form Toggle Handlers
+  $("#addArtist").click(() => $("#addArtistForm").toggle());
+  $("#addAlbum").click(() => $("#addAlbumForm").toggle());
+  $("#addSong").click(() => {
+    $("#addSongForm").toggle();
+    fetchAllAlbums(); // Fetch albums when toggling the add song form
+  });
+
+  // Fetch and Display Artists, Albums, and Songs
+  async function fetchAllArtists() {
+    try {
+      const response = await fetch("http://localhost:3000/artists/all");
+      const artists = await response.json();
+      populateArtistsList(artists);
+      populateArtistSelect(artists);
+    } catch (error) {
+      console.error("Error fetching artists:", error);
+    }
+  }
+
+  function populateArtistsList(artists) {
+    const $artistsList = $("#artistList");
+    $artistsList.empty();
+    artists.forEach((artist) => {
+      const $listItem = $("<li>")
+        .text(artist.name)
+        .addClass("cursor-pointer")
+        .click(() => fetchAlbumsByArtist(artist.albums));
+      $artistsList.append($listItem);
+    });
+  }
+
+  function populateArtistSelect(artists) {
+    const $albumArtistSelect = $("#albumArtist");
+    $albumArtistSelect
+      .empty()
+      .append($("<option disabled selected>").text("Select Artist"));
+    artists.forEach((artist) => {
+      const $option = $("<option>").val(artist._id).text(artist.name);
+      $albumArtistSelect.append($option);
+    });
+  }
+
+  async function fetchAllAlbums() {
+    try {
+      const response = await fetch("http://localhost:3000/albums/all");
+      const albums = await response.json();
+      populateAlbumSelect(albums);
+    } catch (error) {
+      console.error("Error fetching albums:", error);
+    }
+  }
+
+  function populateAlbumSelect(albums) {
+    const $songAlbumSelect = $("#songAlbum");
+    $songAlbumSelect
+      .empty()
+      .append($("<option disabled selected>").text("Select Album"));
+    albums.forEach((album) => {
+      const $option = $("<option>").val(album._id).text(album.name);
+      $songAlbumSelect.append($option);
+    });
+  }
+
   async function fetchAlbumsByArtist(albums) {
     const $albumsList = $("#albumsList");
     $albumsList.empty();
     albums.forEach((album) => {
       const $listItem = $("<li>").text(album.name).addClass("cursor-pointer");
-      $listItem.on("click", () => {
-        fetchSongsByAlbum(album._id);
-      });
+      $listItem.click(() => fetchSongsByAlbum(album._id));
       $albumsList.append($listItem);
     });
   }
@@ -15,39 +77,132 @@ $(document).ready(function () {
     try {
       const response = await fetch(`http://localhost:3000/albums/${albumId}`);
       const album = await response.json();
-      console.log(response);
       const songs = album.songs;
       const $songsList = $("#songsList");
       $songsList.empty();
       songs.forEach((song) => {
-        const $listItem = $("<li>").text(song.name).addClass("cursor-pointer");
+        const $listItem = $("<li>").addClass(
+          "flex justify-between items-center"
+        );
+        const $songName = $("<span>").text(song.name);
+        const $deleteButton = $("<button>")
+          .text("X")
+          .addClass(
+            "bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+          )
+          .click(() => deleteSong(song._id));
+        $listItem.append($songName, $deleteButton);
         $songsList.append($listItem);
       });
-      displaySongs(songs);
     } catch (error) {
       console.error("Error fetching songs:", error);
     }
   }
 
-  async function fetchAllArtists() {
+  // FORMS
+  $("#artistForm").submit(async function (event) {
+    event.preventDefault();
+    const name = $("#artistName").val();
+    const dob = $("#artistDob").val();
+    const bio = $("#artistBio").val();
+
     try {
-      const response = await fetch("http://localhost:3000/artists/all");
-      const artists = await response.json();
-      const $artistsList = $("#artistList");
-      $artistsList.empty();
-      artists.forEach((artist) => {
-        const $listItem = $("<li>")
-          .text(artist.name)
-          .addClass("cursor-pointer");
-        $listItem.on("click", () => fetchAlbumsByArtist(artist.albums));
-        $artistsList.append($listItem);
+      const response = await fetch("http://localhost:3000/artists/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, dob, bio }),
+      });
+
+      if (response.ok) {
+        fetchAllArtists();
+        $("#addArtistForm").hide();
+      } else {
+        console.error("Failed to add artist");
+      }
+    } catch (error) {
+      console.error("Error adding artist:", error);
+    }
+  });
+
+  $("#albumForm").submit(async function (event) {
+    event.preventDefault();
+    const name = $("#albumName").val();
+    const genre = $("#albumGenre").val();
+    const releaseDate = $("#albumReleaseDate").val();
+    const artist = $("#albumArtist").val();
+
+    try {
+      await fetch("http://localhost:3000/albums/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, genre, releaseDate, artistId: artist }),
       });
     } catch (error) {
-      console.error("Error fetching artists:", error);
+      console.error("Error adding album:", error);
     }
+
+    location.reload();
+  });
+
+  $("#songForm").submit(async function (event) {
+    event.preventDefault();
+    console.log("hello");
+    const name = $("#songName").val();
+    const duration = $("#songDuration").val();
+    const album = $("#songAlbum").val();
+    const trackNumber = $("#songTrackNumber").val();
+    console.log(name, duration, album, trackNumber);
+    try {
+      await fetch("http://localhost:3000/songs/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, duration, albumId: album, trackNumber }),
+      });
+    } catch (error) {
+      console.error("Error adding album:", error);
+    }
+
+    location.reload();
+  });
+
+  async function deleteArtist(artistId) {
+    try {
+      await fetch(`http://localhost:3000/artists/${artistId}`, {
+        method: "DELETE",
+      });
+    } catch (error) {
+      console.error("Error deleting artist:", error);
+    }
+    location.reload();
   }
 
-  fetchAllArtists();
+  async function deleteAlbum(albumId) {
+    try {
+      await fetch(`http://localhost:3000/albums/${albumId}`, {
+        method: "DELETE",
+      });
+    } catch (error) {
+      console.error("Error deleting album:", error);
+    }
+    location.reload();
+  }
+
+  async function deleteSong(songId) {
+    try {
+      await fetch(`http://localhost:3000/songs/${songId}`, {
+        method: "DELETE",
+      });
+    } catch (error) {
+      console.error("Error deleting song:", error);
+    }
+    location.reload();
+  }
 
   $("#loginForm").submit(function (event) {
     event.preventDefault();
@@ -65,17 +220,12 @@ $(document).ready(function () {
 
   async function loginUser(username, password) {
     const url = "http://localhost:3000/users/login";
-    const data = {
-      username: username,
-      password: password,
-    };
+    const data = { username, password };
 
     try {
       const response = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
@@ -95,18 +245,12 @@ $(document).ready(function () {
 
   async function registerUser(username, password) {
     const url = "http://localhost:3000/users/register";
-    const data = {
-      username: username,
-      password: password,
-      role: "user",
-    };
+    const data = { username, password, role: "user" };
 
     try {
       const response = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
@@ -120,4 +264,6 @@ $(document).ready(function () {
       console.error("Error during registration:", error);
     }
   }
+
+  fetchAllArtists();
 });
