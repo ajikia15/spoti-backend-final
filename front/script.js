@@ -125,18 +125,25 @@ $(document).ready(function () {
       const $songsList = $("#songsList");
       $songsList.empty();
       songs.forEach((song) => {
-        const $listItem = $("<li>").addClass(
-          "flex justify-between items-center"
-        );
-        const $songName = $("<span>").text(song.name);
-        const $deleteButton = $("<button>")
-          .text("X")
+        const $listItem = $("<li>")
+          .text(song.name)
+          .addClass("cursor-pointer")
+          .data("songId", song._id);
+
+        const $closeBtn = $("<span>")
+          .text("x")
           .addClass(
-            "bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+            "close-btn inline-block bg-red-500 text-white p-1 ml-2 cursor-pointer hover:bg-red-700 rounded"
           )
-          .click(() => deleteSong(song._id));
-        $listItem.append($songName, $deleteButton);
+          .data("songId", song._id);
+
+        $listItem.append($closeBtn);
         $songsList.append($listItem);
+      });
+      $songsList.on("click", ".close-btn", function (event) {
+        event.stopPropagation();
+        deleteSong($(this).data("songId"));
+        $(this).parent().remove();
       });
     } catch (error) {
       console.error("Error fetching songs:", error);
@@ -162,7 +169,7 @@ $(document).ready(function () {
       if (response.ok) {
         const newArtist = await response.json();
         appendArtistToList(newArtist);
-        $("#addArtistForm").hide();
+        // $("#addArtistForm").hide();
       } else {
         console.error("Failed to add artist");
       }
@@ -242,26 +249,54 @@ $(document).ready(function () {
 
   $("#songForm").submit(async function (event) {
     event.preventDefault();
-    console.log("hello");
     const name = $("#songName").val();
     const duration = $("#songDuration").val();
     const album = $("#songAlbum").val();
     const trackNumber = $("#songTrackNumber").val();
-    console.log(name, duration, album, trackNumber);
     try {
-      await fetch("http://localhost:3000/songs/add", {
+      const response = await fetch("http://localhost:3000/songs/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ name, duration, albumId: album, trackNumber }),
       });
-    } catch (error) {
-      console.error("Error adding album:", error);
-    }
 
-    location.reload();
+      if (response.ok) {
+        const newSong = await response.json();
+        appendSongToList(newSong);
+        // $("#addSongForm").hide();
+      } else {
+        console.error("Failed to add song");
+      }
+    } catch (error) {
+      console.error("Error adding song:", error);
+    }
   });
+
+  function appendSongToList(song) {
+    const $songsList = $("#songsList");
+    const $listItem = $("<li>")
+      .text(song.name)
+      .addClass("cursor-pointer")
+      .data("songId", song._id);
+
+    console.log($listItem.data("songId"));
+    const $closeBtn = $("<span>")
+      .text("x")
+      .addClass(
+        "close-btn inline-block bg-red-500 text-white p-1 ml-2 cursor-pointer hover:bg-red-700 rounded"
+      )
+      .data("songId", song._id)
+      .click(function (event) {
+        event.stopPropagation();
+        console.log($(this).data("songId"));
+        deleteSong($(this).data("songId"));
+        $(this).parent().remove();
+      });
+    $listItem.append($closeBtn);
+    $songsList.append($listItem);
+  }
 
   async function deleteArtist(artistId) {
     try {
