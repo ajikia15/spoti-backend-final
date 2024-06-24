@@ -26,8 +26,30 @@ $(document).ready(function () {
       const $listItem = $("<li>")
         .text(artist.name)
         .addClass("cursor-pointer")
-        .click(() => fetchAlbumsByArtist(artist.albums));
+        .data("artistId", artist._id);
+
+      const $closeBtn = $("<span>")
+        .text("x")
+        .addClass(
+          "close-btn inline-block bg-red-500 text-white p-1 ml-2 cursor-pointer hover:bg-red-700 rounded"
+        )
+        .data("artistId", artist._id);
+
+      $listItem.append($closeBtn);
       $artistsList.append($listItem);
+    });
+
+    $artistsList.on("click", "li", function () {
+      const artistId = $(this).data("artistId");
+      fetchAlbumsByArtist(
+        artists.find((artist) => artist._id === artistId).albums
+      );
+    });
+
+    $artistsList.on("click", ".close-btn", function (event) {
+      event.stopPropagation();
+      deleteArtist($(this).data("artistId"));
+      $(this).parent().remove();
     });
   }
 
@@ -153,7 +175,19 @@ $(document).ready(function () {
     const $listItem = $("<li>")
       .text(artist.name)
       .addClass("cursor-pointer")
-      .click(() => fetchAlbumsByArtist(artist.albums));
+      .data("artistId", artist._id);
+
+    const $closeBtn = $("<span>")
+      .text("x")
+      .addClass(
+        "close-btn inline-block bg-red-500 text-white p-1 ml-2 cursor-pointer hover:bg-red-700 rounded"
+      )
+      .click(function (event) {
+        event.stopPropagation();
+        deleteArtist($(this).data("artistId"));
+        $(this).parent().remove();
+      });
+    $listItem.append($closeBtn);
     $artistsList.append($listItem);
   }
 
@@ -174,8 +208,8 @@ $(document).ready(function () {
       });
 
       if (response.ok) {
-        const newAlbum = await response.json(); // Assuming the server responds with the added album data
-        appendAlbumToList(newAlbum); // Append the new album to the list
+        const newAlbum = await response.json();
+        appendAlbumToList(newAlbum);
       } else {
         console.error("Failed to add album");
       }
@@ -237,7 +271,6 @@ $(document).ready(function () {
     } catch (error) {
       console.error("Error deleting artist:", error);
     }
-    location.reload();
   }
 
   async function deleteAlbum(albumId) {
