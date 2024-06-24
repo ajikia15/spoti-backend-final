@@ -67,9 +67,31 @@ $(document).ready(function () {
     const $albumsList = $("#albumsList");
     $albumsList.empty();
     albums.forEach((album) => {
-      const $listItem = $("<li>").text(album.name).addClass("cursor-pointer");
-      $listItem.click(() => fetchSongsByAlbum(album._id));
+      const $listItem = $("<li>")
+        .text(album.name)
+        .addClass("cursor-pointer")
+        .data("albumId", album._id);
+
+      const $closeBtn = $("<span>")
+        .text("x")
+        .addClass(
+          "close-btn inline-block bg-red-500 text-white p-1 ml-2 cursor-pointer hover:bg-red-700 rounded"
+        )
+        .data("albumId", album._id);
+
+      $listItem.append($closeBtn);
       $albumsList.append($listItem);
+    });
+
+    $albumsList.on("click", "li", function () {
+      const albumId = $(this).data("albumId");
+      fetchSongsByAlbum(albumId);
+    });
+
+    $albumsList.on("click", ".close-btn", function (event) {
+      event.stopPropagation();
+      deleteAlbum($(this).data("albumId"));
+      $(this).parent().remove();
     });
   }
 
@@ -116,7 +138,8 @@ $(document).ready(function () {
       });
 
       if (response.ok) {
-        fetchAllArtists();
+        const newArtist = await response.json();
+        appendArtistToList(newArtist);
         $("#addArtistForm").hide();
       } else {
         console.error("Failed to add artist");
@@ -125,6 +148,14 @@ $(document).ready(function () {
       console.error("Error adding artist:", error);
     }
   });
+  function appendArtistToList(artist) {
+    const $artistsList = $("#artistList");
+    const $listItem = $("<li>")
+      .text(artist.name)
+      .addClass("cursor-pointer")
+      .click(() => fetchAlbumsByArtist(artist.albums));
+    $artistsList.append($listItem);
+  }
 
   $("#albumForm").submit(async function (event) {
     event.preventDefault();
@@ -134,19 +165,46 @@ $(document).ready(function () {
     const artist = $("#albumArtist").val();
 
     try {
-      await fetch("http://localhost:3000/albums/add", {
+      const response = await fetch("http://localhost:3000/albums/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ name, genre, releaseDate, artistId: artist }),
       });
+
+      if (response.ok) {
+        const newAlbum = await response.json(); // Assuming the server responds with the added album data
+        appendAlbumToList(newAlbum); // Append the new album to the list
+      } else {
+        console.error("Failed to add album");
+      }
     } catch (error) {
       console.error("Error adding album:", error);
     }
-
-    location.reload();
   });
+
+  function appendAlbumToList(album) {
+    const $albumsList = $("#albumsList");
+    const $listItem = $("<li>")
+      .text(album.name)
+      .addClass("cursor-pointer")
+      .data("albumId", album._id);
+
+    const $closeBtn = $("<span>")
+      .text("x")
+      .addClass(
+        "close-btn inline-block bg-red-500 text-white p-1 ml-2 cursor-pointer hover:bg-red-700 rounded"
+      )
+      .click(function (event) {
+        event.stopPropagation();
+        deleteAlbum($(this).data("albumId"));
+        $(this).parent().remove();
+      });
+
+    $listItem.append($closeBtn);
+    $albumsList.append($listItem);
+  }
 
   $("#songForm").submit(async function (event) {
     event.preventDefault();
@@ -190,7 +248,6 @@ $(document).ready(function () {
     } catch (error) {
       console.error("Error deleting album:", error);
     }
-    location.reload();
   }
 
   async function deleteSong(songId) {
@@ -201,7 +258,6 @@ $(document).ready(function () {
     } catch (error) {
       console.error("Error deleting song:", error);
     }
-    location.reload();
   }
 
   $("#loginForm").submit(function (event) {
