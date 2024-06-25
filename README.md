@@ -6,3 +6,4 @@ How to run:
 2. cd -> npm install
 3. run mongo
 4. npm start
+5. frontend is placed in `frontend` folder.
