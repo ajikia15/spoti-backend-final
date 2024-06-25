@@ -179,6 +179,7 @@ $(document).ready(function () {
   });
   function appendArtistToList(artist) {
     const $artistsList = $("#artistList");
+    const $albumsList = $("#albumsList");
     const $listItem = $("<li>")
       .text(artist.name)
       .addClass("cursor-pointer")
@@ -186,16 +187,19 @@ $(document).ready(function () {
 
     const $closeBtn = $("<span>")
       .text("x")
+      .data("artistId", artist._id)
       .addClass(
         "close-btn inline-block bg-red-500 text-white p-1 ml-2 cursor-pointer hover:bg-red-700 rounded"
       )
       .click(function (event) {
         event.stopPropagation();
         deleteArtist($(this).data("artistId"));
+        $albumsList.empty();
         $(this).parent().remove();
       });
     $listItem.append($closeBtn);
     $artistsList.append($listItem);
+    fetchAllArtists();
   }
 
   $("#albumForm").submit(async function (event) {
@@ -227,22 +231,26 @@ $(document).ready(function () {
 
   function appendAlbumToList(album) {
     const $albumsList = $("#albumsList");
+    const $songsList = $("#songsList");
     const $listItem = $("<li>")
       .text(album.name)
       .addClass("cursor-pointer")
       .data("albumId", album._id);
-
+    console.log("Album ID:", album._id);
     const $closeBtn = $("<span>")
       .text("x")
       .addClass(
         "close-btn inline-block bg-red-500 text-white p-1 ml-2 cursor-pointer hover:bg-red-700 rounded"
       )
+      .data("albumId", album._id)
       .click(function (event) {
         event.stopPropagation();
+        console.log("Album ID:", $(this).data("albumId"));
         deleteAlbum($(this).data("albumId"));
         $(this).parent().remove();
+        $songsList.empty();
       });
-
+    fetchAllAlbums();
     $listItem.append($closeBtn);
     $albumsList.append($listItem);
   }
@@ -281,7 +289,6 @@ $(document).ready(function () {
       .addClass("cursor-pointer")
       .data("songId", song._id);
 
-    console.log($listItem.data("songId"));
     const $closeBtn = $("<span>")
       .text("x")
       .addClass(
@@ -290,7 +297,6 @@ $(document).ready(function () {
       .data("songId", song._id)
       .click(function (event) {
         event.stopPropagation();
-        console.log($(this).data("songId"));
         deleteSong($(this).data("songId"));
         $(this).parent().remove();
       });
